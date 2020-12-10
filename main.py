@@ -1,4 +1,6 @@
 import argparse
+import datetime
+import csv
 import logging
 logging.basicConfig(level = logging.INFO)
 import re
@@ -22,9 +24,11 @@ def _news_scraper(news_site_uid):
     for link in homepage.article_links:
         article = _fetch_articles(news_site_uid, host, link)
         if article:
-            logger.info('Article fetched :D')
+            logger.info('Article fetched :v')
             articles.append(article.title)
-    print(len(articles))
+            break
+    #print(len(articles))
+    save_articles(news_site_uid, articles)
 
 
 def _fetch_articles(news_site_uid, host, link):
@@ -50,9 +54,18 @@ def _build_link(host, link):
 
 
 
+def save_articles(news_site_uid, articles):
+    now = datetime.datetime.now().strftime('%Y_%m_%d')
+    outFileName = '{}_{}_articles.csv'.format(news_site_uid, now)
+    #csv_headers = list(filter(lambda property: not property.startswith('_'), dir(articles[0])))
+    csv_headers = ['title', 'body', 'url']
+    with open(outFileName, mode='w+') as f:
+        writer = csv.writer(f)
+        writer.writerow(csv_headers)
 
-
-
+        for article in articles:
+            row = [str(getattr(article, prop)) for prop in csv_headers]
+            writer.writerow(row)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -65,3 +78,4 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     _news_scraper(args.news_site)
+
